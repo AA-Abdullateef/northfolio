@@ -1,0 +1,2179 @@
+{
+    "info": {
+        "name": "Northfolio API v1",
+        "_postman_id": "northfolio-api-v1-collection",
+        "description": "Northfolio API (demo; Stripe test mode, internal ledger, no real money).\n\n## Quick Start\n1. Generate a Demo Wallet ID (BIP-39 phrase), pass the 3-word challenge or import a known phrase.\n2. Use the returned wallet token to call Register Profile.\n3. Paste the email OTP into {{otp}} and run Verify OTP.\n4. Money routes stay blocked until profile completion and email verification.\n\n## Notes\n- The wallet is a demo identity, not a blockchain wallet. Only mnemonic_hash, fingerprint and public_id are stored; plaintext phrases never are.\n- Money amounts are returned as 8-decimal strings.\n- Deposits complete only via the signed Stripe webhook (see 07 · Deposits / Webhook).\n- Admin actions are Blade routes, not API routes.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "00 - Reference Data",
+            "item": [
+                {
+                    "name": "Countries",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/countries",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "countries"
+                            ]
+                        },
+                        "description": "Public list of countries for register-profile."
+                    }
+                },
+                {
+                    "name": "Methods",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/methods",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "methods"
+                            ]
+                        },
+                        "description": "Public list of funding methods with active submethods."
+                    },
+                    "response": [
+                        {
+                            "name": "Success — all methods (crypto + bank)",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": null,
+                                "url": {
+                                    "raw": "{{base_url}}/methods",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "methods"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Methods.\",\n    \"data\": {\n        \"methods\": [\n            {\n                \"id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                \"name\": \"Crytocurrency\",\n                \"sub_methods\": [\n                    {\n                        \"id\": \"1f6a1b2c-1111-4b11-8b11-000000000011\",\n                        \"method_id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                        \"name\": \"Bitcoin (BTC)\",\n                        \"account_name\": null,\n                        \"account_number\": null,\n                        \"bank_name\": null,\n                        \"routing_number\": null,\n                        \"swift_code\": null,\n                        \"iban\": null,\n                        \"wallet_address\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n                        \"network\": \"Bitcoin\",\n                        \"instructions\": \"Send the exact amount to this address. Deposits confirm after 2 network confirmations.\",\n                        \"is_active\": true,\n                        \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                        \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n                    },\n                    {\n                        \"id\": \"1f6a1b2c-1112-4b11-8b11-000000000012\",\n                        \"method_id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                        \"name\": \"USDT (TRC20)\",\n                        \"account_name\": null,\n                        \"account_number\": null,\n                        \"bank_name\": null,\n                        \"routing_number\": null,\n                        \"swift_code\": null,\n                        \"iban\": null,\n                        \"wallet_address\": \"TXYZa1b2c3d4e5f6g7h8i9j0k1l2m3n4o5\",\n                        \"network\": \"Tron (TRC20)\",\n                        \"instructions\": \"Only send USDT on the Tron network. Other networks will result in loss of funds.\",\n                        \"is_active\": true,\n                        \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                        \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n                    }\n                ],\n                \"created_at\": \"2026-06-13T13:31:38.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:38.000000Z\"\n            },\n            {\n                \"id\": \"0f6a1b2c-2222-4a22-8a22-000000000002\",\n                \"name\": \"Bank Transfer\",\n                \"sub_methods\": [\n                    {\n                        \"id\": \"1f6a1b2c-2221-4b22-8b22-000000000021\",\n                        \"method_id\": \"0f6a1b2c-2222-4a22-8a22-000000000002\",\n                        \"name\": \"Zenith Bank (NGN)\",\n                        \"account_name\": \"Northfolio Demo Bank\",\n                        \"account_number\": \"1234567890\",\n                        \"bank_name\": \"Zenith Bank\",\n                        \"routing_number\": null,\n                        \"swift_code\": \"ZEIBNGLA\",\n                        \"iban\": null,\n                        \"wallet_address\": null,\n                        \"network\": null,\n                        \"instructions\": \"Use your registered email as the transfer narration/reference.\",\n                        \"is_active\": true,\n                        \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                        \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n                    }\n                ],\n                \"created_at\": \"2026-06-13T13:31:38.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:38.000000Z\"\n            }\n        ]\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Submethods",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/submethods?method_id={{method_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "submethods"
+                            ],
+                            "query": [
+                                {
+                                    "key": "method_id",
+                                    "value": "{{method_id}}",
+                                    "description": "Optional method UUID filter",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Public list of active submethods. Optionally filter by method_id."
+                    },
+                    "response": [
+                        {
+                            "name": "Success — all active sub-methods",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": null,
+                                "url": {
+                                    "raw": "{{base_url}}/submethods?method_id={{method_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "submethods"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "method_id",
+                                            "value": "{{method_id}}",
+                                            "description": "Optional method UUID filter",
+                                            "disabled": true
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Sub methods.\",\n    \"data\": {\n        \"sub_methods\": [\n            {\n                \"id\": \"1f6a1b2c-1111-4b11-8b11-000000000011\",\n                \"method_id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                \"name\": \"Bitcoin (BTC)\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n                \"network\": \"Bitcoin\",\n                \"instructions\": \"Send the exact amount to this address. Deposits confirm after 2 network confirmations.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n            },\n            {\n                \"id\": \"1f6a1b2c-1112-4b11-8b11-000000000012\",\n                \"method_id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                \"name\": \"USDT (TRC20)\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXYZa1b2c3d4e5f6g7h8i9j0k1l2m3n4o5\",\n                \"network\": \"Tron (TRC20)\",\n                \"instructions\": \"Only send USDT on the Tron network. Other networks will result in loss of funds.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n            },\n            {\n                \"id\": \"1f6a1b2c-2221-4b22-8b22-000000000021\",\n                \"method_id\": \"0f6a1b2c-2222-4a22-8a22-000000000002\",\n                \"name\": \"Zenith Bank (NGN)\",\n                \"account_name\": \"Northfolio Demo Bank\",\n                \"account_number\": \"1234567890\",\n                \"bank_name\": \"Zenith Bank\",\n                \"routing_number\": null,\n                \"swift_code\": \"ZEIBNGLA\",\n                \"iban\": null,\n                \"wallet_address\": null,\n                \"network\": null,\n                \"instructions\": \"Use your registered email as the transfer narration/reference.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n            }\n        ]\n    }\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "01 · Auth",
+            "item": [
+                {
+                    "name": "Register Profile",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/register-profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "register-profile"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"{{user_email}}\",\n  \"country_id\": \"{{country_id}}\",\n  \"phone\": \"+2348000000000\",\n  \"password\": \"{{user_password}}\",\n  \"password_confirmation\": \"{{user_password}}\"\n}"
+                        },
+                        "description": "Complete profile registration after wallet verification/import. Requires a wallet bearer token. Sends a 6-digit OTP to email."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "pm.test('success true', () => pm.expect(res.success).to.be.true);",
+                                    "if (res.data?.user?.id) {",
+                                    "  pm.environment.set(\"user_id\", res.data.user.id);",
+                                    "  pm.environment.set(\"user_email\", res.data.user.email);",
+                                    "  if (res.data.token) pm.environment.set(\"token\", res.data.token);",
+                                    "  console.log(\"Profile registered:\", res.data.user.email);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Verify OTP (Email)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/verify-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "verify-otp"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}"
+                        },
+                        "description": "Verify the 6-digit registration OTP. Paste the OTP from your email into the `otp` environment variable first."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "pm.test('has token', () => pm.expect(res.data).to.have.property('token'));",
+                                    "if (res.data?.token) {",
+                                    "  pm.environment.set('token', res.data.token);",
+                                    "  pm.environment.set('user_id', res.data.user.id);",
+                                    "  console.log('Token set for:', res.data.user.email);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Resend OTP",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/resend-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "resend-otp"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"email\": \"{{user_email}}\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "login"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"user\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+                        },
+                        "description": "`user` field accepts email or username."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "if (res.data?.token) {",
+                                    "  pm.environment.set('token', res.data.token);",
+                                    "  pm.environment.set('user_id', res.data.user.id);",
+                                    "  console.log('Logged in as:', res.data.user.email);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Me",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "me"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "pm.test('has user', () => pm.expect(pm.response.json().data).to.have.property('user'));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "logout"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "pm.environment.unset('token');",
+                                    "console.log('Token cleared.');"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "02 · Password Reset",
+            "item": [
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/forgot-password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "forgot-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"email\": \"{{user_email}}\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Reset OTP",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/verify-reset-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "verify-reset-otp"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "if (res.data?.reset_token) {",
+                                    "  pm.environment.set('reset_token', res.data.reset_token);",
+                                    "  console.log('Reset token stored.');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/reset-password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reset-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"reset_token\": \"{{reset_token}}\",\n  \"password\": \"NewPassword@456\",\n  \"password_confirmation\": \"NewPassword@456\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "03 · Wallet Setup (Mnemonic)",
+            "item": [
+                {
+                    "name": "1 — Generate Mnemonic",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/wallet/generate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "wallet",
+                                "generate"
+                            ]
+                        },
+                        "description": "Generates 12 BIP39 words. Write them down — NOT stored in DB at this step."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "if (res.data?.setup_token) {",
+                                    "  pm.environment.set('setup_token', res.data.setup_token);",
+                                    "  console.log('Setup token stored. Mnemonic:', res.data.mnemonic);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2 — Challenge",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/wallet/challenge",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "wallet",
+                                "challenge"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"setup_token\": \"{{setup_token}}\"\n}"
+                        },
+                        "description": "Returns 3 random 1-based positions to confirm."
+                    }
+                },
+                {
+                    "name": "3 - Verify & Create Demo Wallet ID",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/wallet/verify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "wallet",
+                                "verify"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"setup_token\": \"{{setup_token}}\",\n  \"words\": {\n    \"3\": \"word_at_position_3\",\n    \"7\": \"word_at_position_7\",\n    \"11\": \"word_at_position_11\"\n  }\n}"
+                        },
+                        "description": "Verifies challenge words and creates only a wallet identity. No user/profile/email is generated. Stores mnemonic_hash, fingerprint, and public_id only."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "if (res.data?.token) {",
+                                    "  pm.environment.set(\"token\", res.data.token);",
+                                    "  pm.environment.set(\"wallet_id\", res.data.wallet.id);",
+                                    "  console.log(\"Wallet identity created:\", res.data.wallet.fingerprint);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Import by Mnemonic",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/wallet/import",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "wallet",
+                                "import"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"mnemonic\": \"word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12\"\n}"
+                        },
+                        "description": "Primary login endpoint. Derives fingerprint/public key from mnemonic, locates wallet identity, and returns either a user session or wallet onboarding session."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "if (res.data?.token) {",
+                                    "  pm.environment.set(\"token\", res.data.token);",
+                                    "  if (res.data.user?.id) pm.environment.set(\"user_id\", res.data.user.id);",
+                                    "  if (res.data.wallet?.id) pm.environment.set(\"wallet_id\", res.data.wallet.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "04 · Dashboard & Assets",
+            "item": [
+                {
+                    "name": "Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard?asset_id={{asset_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard"
+                            ],
+                            "query": [
+                                {
+                                    "key": "asset_id",
+                                    "value": "{{asset_id}}",
+                                    "description": "Optional — filter recent transactions by asset"
+                                }
+                            ]
+                        },
+                        "description": "Returns profile, all asset balances, recent transactions."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "// Auto-set first asset_id for use in other requests",
+                                    "const assets = res.data?.assets;",
+                                    "if (assets && assets.length > 0 && !pm.environment.get('asset_id')) {",
+                                    "  pm.environment.set('asset_id', assets[0].id);",
+                                    "  console.log('asset_id auto-set to:', assets[0].name, assets[0].id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Assets Overview",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/assets",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assets"
+                            ]
+                        },
+                        "description": "All assets with current balances."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "const assets = res.data?.assets;",
+                                    "if (assets && assets.length > 0) {",
+                                    "  pm.environment.set('asset_id', assets[0].asset.id);",
+                                    "  console.log('asset_id set to:', assets[0].asset.name, assets[0].asset.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Asset Transactions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/assets/{{asset_id}}/transactions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "assets",
+                                "{{asset_id}}",
+                                "transactions"
+                            ]
+                        },
+                        "description": "Transaction history + balance for a single asset."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "05 · Profile",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"country_id\": \"{{country_id}}\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+1-555-000-1234\",\n  \"gender\": \"Male\",\n  \"state\": \"CA\",\n  \"address\": \"123 Main Street\",\n  \"zip\": \"90210\",\n  \"dob\": \"1990-01-15\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Upload Photo",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/profile/photo",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "photo"
+                            ]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "profile_photo",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "JPG/PNG max 800KB"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Settings",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/settings",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "settings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"old_password\": \"{{user_password}}\",\n  \"password\": \"NewPass@789\",\n  \"password_confirmation\": \"NewPass@789\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Enable 2FA",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/two-factor/enable",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "two-factor",
+                                "enable"
+                            ]
+                        },
+                        "description": "auth=0 enables 2FA immediately. Any other value sends a deactivation OTP."
+                    }
+                },
+                {
+                    "name": "Disable 2FA — Request Code",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/two-factor/disable",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "two-factor",
+                                "disable"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Disable 2FA — Confirm",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/two-factor/confirm",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "two-factor",
+                                "confirm"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"code\": \"{{two_factor_token}}\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Deactivate Account",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile"
+                            ]
+                        },
+                        "description": "Revokes all tokens and marks account as deactivated. User row stays in DB."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "06 · Transactions",
+            "item": [
+                {
+                    "name": "List Transactions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/transactions?per_page=15",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "type",
+                                    "value": "deposit",
+                                    "disabled": true,
+                                    "description": "deposit | withdrawal | transfer"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "disabled": true,
+                                    "description": "pending | completed | cancelled"
+                                },
+                                {
+                                    "key": "asset_id",
+                                    "value": "{{asset_id}}",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "15"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Cancel Transaction",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/transactions/{{transaction_id}}/cancel",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "transactions",
+                                "{{transaction_id}}",
+                                "cancel"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"status\": \"cancelled\"\n}"
+                        },
+                        "description": "Users can only cancel their own pending transactions. Status must be 'cancelled'."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "07 · Deposits",
+            "item": [
+                {
+                    "name": "Deposit Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/deposits/options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "deposits",
+                                "options"
+                            ]
+                        },
+                        "description": "Returns assets, methods with sub-methods, and pending deposits."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "const firstSub = res.data?.methods?.[0]?.sub_methods?.[0];",
+                                    "if (firstSub) {",
+                                    "  pm.environment.set('sub_method_id', firstSub.id);",
+                                    "  console.log('sub_method_id auto-set to:', firstSub.name, firstSub.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Initiate Deposit",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/deposits",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "deposits"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"usd_amount\": \"100.00\"\n}"
+                        },
+                        "description": "Creates a Stripe test-mode PaymentIntent and a PENDING deposit. Returns `client_secret` for Stripe.js. The balance is credited only when Stripe's signed webhook (payment_intent.succeeded) arrives."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "if (res.data?.transaction?.id) {",
+                                    "  pm.environment.set('transaction_id', res.data.transaction.id);",
+                                    "  console.log('transaction_id set:', res.data.transaction.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Show Deposit",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/deposits/{{transaction_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "deposits",
+                                "{{transaction_id}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Stripe Webhook (locally signed test event)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Signs the body like Stripe does: HMAC-SHA256(secret, `${t}.${payload}`). Set stripe_webhook_secret to your STRIPE_WEBHOOK_SECRET.",
+                                    "const t = Math.floor(Date.now()/1000);",
+                                    "const body = pm.request.body.raw.replace(/\\{\\{(\\w+)\\}\\}/g, (m,k)=>pm.variables.get(k));",
+                                    "const sig = CryptoJS.HmacSHA256(`${t}.${body}`, pm.variables.get('stripe_webhook_secret')).toString();",
+                                    "pm.request.headers.upsert({key:'Stripe-Signature', value:`t=${t},v1=${sig}`});",
+                                    "pm.request.body.raw = body;"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "description": "Public route; authenticated only by the Stripe-Signature header. Response: 200 {received:true,result:completed|cancelled|duplicate|unknown_intent|rejected:<reason>}; 400 invalid signature or malformed payload; 500 secret not configured. The PaymentIntent id, amount (cents) and currency must match the pending deposit. Use the Stripe CLI (stripe listen / trigger) for real test events.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": \"evt_demo_1\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\"object\": {\"id\": \"{{payment_intent_id}}\", \"status\": \"succeeded\", \"currency\": \"usd\", \"amount\": 10000, \"amount_received\": 10000, \"metadata\": {\"transaction_id\": \"{{transaction_id}}\"}}}\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/webhooks/stripe",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "webhooks",
+                                "stripe"
+                            ]
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "08 · Withdrawals",
+            "item": [
+                {
+                    "name": "Withdrawal Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/withdrawals/options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "withdrawals",
+                                "options"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "const firstSub = res.data?.methods?.[0]?.sub_methods?.[0];",
+                                    "if (firstSub) {",
+                                    "  pm.environment.set('sub_method_id', firstSub.id);",
+                                    "  console.log('sub_method_id auto-set to:', firstSub.name, firstSub.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success — crypto methods only",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": null,
+                                "url": {
+                                    "raw": "{{base_url}}/withdrawals/options",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "withdrawals",
+                                        "options"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Withdrawal options.\",\n    \"data\": {\n        \"assets\": [\n            {\n                \"id\": \"2f6a1b2c-1111-4c11-8c11-000000000031\",\n                \"name\": \"BTC\",\n                \"label\": \"Bitcoin\",\n                \"icon\": \"http://localhost:8000/assets/icons/btc.svg\",\n                \"price_usd\": 61234.5,\n                \"price_updated_at\": \"2026-09-08T09:00:00.000000Z\",\n                \"swap_charge_rate\": 1.0,\n                \"buy_charge_rate\": 2.0,\n                \"sell_charge_rate\": 2.0\n            },\n            {\n                \"id\": \"2f6a1b2c-1112-4c11-8c11-000000000032\",\n                \"name\": \"ETH\",\n                \"label\": \"Ethereum\",\n                \"icon\": \"http://localhost:8000/assets/icons/eth.svg\",\n                \"price_usd\": 3021.1,\n                \"price_updated_at\": \"2026-09-08T09:00:00.000000Z\",\n                \"swap_charge_rate\": 1.0,\n                \"buy_charge_rate\": 2.0,\n                \"sell_charge_rate\": 2.0\n            }\n        ],\n        \"methods\": [\n            {\n                \"id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                \"name\": \"Crytocurrency\",\n                \"sub_methods\": [\n                    {\n                        \"id\": \"1f6a1b2c-1111-4b11-8b11-000000000011\",\n                        \"method_id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                        \"name\": \"Bitcoin (BTC)\",\n                        \"account_name\": null,\n                        \"account_number\": null,\n                        \"bank_name\": null,\n                        \"routing_number\": null,\n                        \"swift_code\": null,\n                        \"iban\": null,\n                        \"wallet_address\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n                        \"network\": \"Bitcoin\",\n                        \"instructions\": \"Send the exact amount to this address. Deposits confirm after 2 network confirmations.\",\n                        \"is_active\": true,\n                        \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                        \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n                    },\n                    {\n                        \"id\": \"1f6a1b2c-1112-4b11-8b11-000000000012\",\n                        \"method_id\": \"0f6a1b2c-1111-4a11-8a11-000000000001\",\n                        \"name\": \"USDT (TRC20)\",\n                        \"account_name\": null,\n                        \"account_number\": null,\n                        \"bank_name\": null,\n                        \"routing_number\": null,\n                        \"swift_code\": null,\n                        \"iban\": null,\n                        \"wallet_address\": \"TXYZa1b2c3d4e5f6g7h8i9j0k1l2m3n4o5\",\n                        \"network\": \"Tron (TRC20)\",\n                        \"instructions\": \"Only send USDT on the Tron network. Other networks will result in loss of funds.\",\n                        \"is_active\": true,\n                        \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                        \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n                    }\n                ],\n                \"created_at\": \"2026-06-13T13:31:38.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:38.000000Z\"\n            }\n        ],\n        \"pending\": [],\n        \"history\": []\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Initiate Withdrawal (no 2FA)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/withdrawals",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "withdrawals"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"sub_method_id\": \"{{sub_method_id}}\",\n  \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n  \"amount\": 100.00\n}"
+                        },
+                        "description": "If 2FA is off: creates withdrawal immediately. If 2FA is on: sends token and returns requires_confirmation:true."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.data?.transaction?.id) {",
+                                    "  pm.environment.set('transaction_id', res.data.transaction.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Confirm Withdrawal (2FA)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/withdrawals/confirm",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "withdrawals",
+                                "confirm"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"sub_method_id\": \"{{sub_method_id}}\",\n  \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n  \"amount\": 100.00,\n  \"token\": \"{{two_factor_token}}\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "09 · Transfers",
+            "item": [
+                {
+                    "name": "Wallet Lookup",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/wallet/lookup?query={{recipient_public_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "wallet",
+                                "lookup"
+                            ],
+                            "query": [
+                                {
+                                    "key": "query",
+                                    "value": "{{recipient_public_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Transfer Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/transfers/options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "transfers",
+                                "options"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Initiate Transfer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/transfers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "transfers"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\"\n}"
+                        },
+                        "description": "recipient_id is optional. If provided, creates an incoming credit for the recipient too."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.data?.transaction?.id) {",
+                                    "  pm.environment.set('transaction_id', res.data.transaction.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Confirm Transfer (2FA)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/transfers/confirm",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "transfers",
+                                "confirm"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\",\n  \"token\": \"{{two_factor_token}}\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "10 · Exchange (Swap · Buy · Sell)",
+            "item": [
+                {
+                    "name": "Swap Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/swap/options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "swap",
+                                "options"
+                            ]
+                        },
+                        "description": "Assets with prices + swap_charge_rate, plus this wallet's pending/recent swaps. No `methods` block — swaps move between two crypto assets directly, no payment method involved."
+                    },
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": null,
+                                "url": {
+                                    "raw": "{{base_url}}/swap/options",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "swap",
+                                        "options"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Swap options.\",\n    \"data\": {\n        \"assets\": [\n            {\n                \"id\": \"2f6a1b2c-1111-4c11-8c11-000000000031\",\n                \"name\": \"BTC\",\n                \"label\": \"Bitcoin\",\n                \"icon\": \"http://localhost:8000/assets/icons/btc.svg\",\n                \"price_usd\": 61234.5,\n                \"price_updated_at\": \"2026-09-08T09:00:00.000000Z\",\n                \"swap_charge_rate\": 1.0,\n                \"buy_charge_rate\": 2.0,\n                \"sell_charge_rate\": 2.0\n            },\n            {\n                \"id\": \"2f6a1b2c-1112-4c11-8c11-000000000032\",\n                \"name\": \"ETH\",\n                \"label\": \"Ethereum\",\n                \"icon\": \"http://localhost:8000/assets/icons/eth.svg\",\n                \"price_usd\": 3021.1,\n                \"price_updated_at\": \"2026-09-08T09:00:00.000000Z\",\n                \"swap_charge_rate\": 1.0,\n                \"buy_charge_rate\": 2.0,\n                \"sell_charge_rate\": 2.0\n            },\n            {\n                \"id\": \"2f6a1b2c-1113-4c11-8c11-000000000033\",\n                \"name\": \"USDT\",\n                \"label\": \"Tether\",\n                \"icon\": \"http://localhost:8000/assets/icons/usdt.svg\",\n                \"price_usd\": 1.0,\n                \"price_updated_at\": \"2026-09-08T09:00:00.000000Z\",\n                \"swap_charge_rate\": 1.0,\n                \"buy_charge_rate\": 2.0,\n                \"sell_charge_rate\": 2.0\n            }\n        ],\n        \"pending\": [],\n        \"history\": []\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Initiate Swap",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/swaps",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "swaps"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"from_asset_id\": \"{{from_asset_id}}\",\n  \"to_asset_id\": \"{{to_asset_id}}\",\n  \"amount\": 0.05\n}"
+                        },
+                        "description": "Swap source asset -> target asset. swap_charge_rate% is billed as a separate pending withdrawal leg on the source asset (see FundsService::initiateSwap docblock) — balance must cover amount + charge."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "if (res.data?.transaction?.id) {",
+                                    "  pm.environment.set('transaction_id', res.data.transaction.id);",
+                                    "  console.log('transaction_id set:', res.data.transaction.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Buy Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/buy/options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "buy",
+                                "options"
+                            ]
+                        },
+                        "description": "Assets with prices + buy_charge_rate, methods, pending/recent buys. `methods` is now scoped server-side to Method::fiat() — only Bank Transfer shows here, matching the deposit/withdrawal crypto-only convention on the other side."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const j = pm.response.json();",
+                                    "const a = (j.data && j.data.assets || [])[0];",
+                                    "if (a) pm.environment.set('asset_id', a.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Initiate Buy",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/buys",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "buys"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"usd_amount\": 50\n}"
+                        },
+                        "description": "Instant internal trade funded from the USD balance (USD debit + asset credit + charge leg, one swap_id)."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "if (res.data?.transaction?.id) {",
+                                    "  pm.environment.set('transaction_id', res.data.transaction.id);",
+                                    "  console.log('transaction_id set:', res.data.transaction.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": []
+                },
+                {
+                    "name": "Sell Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/sell/options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sell",
+                                "options"
+                            ]
+                        },
+                        "description": "Assets with prices, sell_charge_rate and wallet balances, methods, pending/recent sells. `methods` scoped server-side to Method::fiat() — same as Buy Options."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "const firstSub = res.data?.methods?.[0]?.sub_methods?.[0];",
+                                    "if (firstSub) {",
+                                    "  pm.environment.set('fiat_sub_method_id', firstSub.id);",
+                                    "  console.log('fiat_sub_method_id auto-set to:', firstSub.name, firstSub.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success — bank/fiat methods only",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": null,
+                                "url": {
+                                    "raw": "{{base_url}}/sell/options",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "sell",
+                                        "options"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Sell options.\",\n    \"data\": {\n        \"assets\": [\n            {\n                \"asset\": {\n                    \"id\": \"2f6a1b2c-1111-4c11-8c11-000000000031\",\n                    \"name\": \"BTC\",\n                    \"label\": \"Bitcoin\",\n                    \"icon\": \"http://localhost:8000/assets/icons/btc.svg\",\n                    \"price_usd\": 61234.5,\n                    \"price_updated_at\": \"2026-09-08T09:00:00.000000Z\",\n                    \"swap_charge_rate\": 1.0,\n                    \"buy_charge_rate\": 2.0,\n                    \"sell_charge_rate\": 2.0\n                },\n                \"balance\": 0.125\n            }\n        ],\n        \"methods\": [\n            {\n                \"id\": \"0f6a1b2c-2222-4a22-8a22-000000000002\",\n                \"name\": \"Bank Transfer\",\n                \"sub_methods\": [\n                    {\n                        \"id\": \"1f6a1b2c-2221-4b22-8b22-000000000021\",\n                        \"method_id\": \"0f6a1b2c-2222-4a22-8a22-000000000002\",\n                        \"name\": \"Zenith Bank (NGN)\",\n                        \"account_name\": \"Northfolio Demo Bank\",\n                        \"account_number\": \"1234567890\",\n                        \"bank_name\": \"Zenith Bank\",\n                        \"routing_number\": null,\n                        \"swift_code\": \"ZEIBNGLA\",\n                        \"iban\": null,\n                        \"wallet_address\": null,\n                        \"network\": null,\n                        \"instructions\": \"Use your registered email as the transfer narration/reference.\",\n                        \"is_active\": true,\n                        \"created_at\": \"2026-06-13T13:31:41.000000Z\",\n                        \"updated_at\": \"2026-06-13T13:31:41.000000Z\"\n                    }\n                ],\n                \"created_at\": \"2026-06-13T13:31:38.000000Z\",\n                \"updated_at\": \"2026-06-13T13:31:38.000000Z\"\n            }\n        ],\n        \"pending\": [],\n        \"history\": []\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Initiate Sell",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/sells",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "sells"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 0.01,\n  \"sub_method_id\": \"{{fiat_sub_method_id}}\",\n  \"reference\": \"my-bank-account-note\"\n}"
+                        },
+                        "description": "Sell crypto for fiat. sub_method_id is nullable but, when present, must belong to a Method::fiat() method (validated in SellRequest) — use {{fiat_sub_method_id}}, not {{sub_method_id}}."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('200 ok', () => pm.response.to.have.status(200));",
+                                    "const res = pm.response.json();",
+                                    "if (res.data?.transaction?.id) {",
+                                    "  pm.environment.set('transaction_id', res.data.transaction.id);",
+                                    "  console.log('transaction_id set:', res.data.transaction.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "11 · Public",
+            "item": [
+                {
+                    "name": "Contact",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/contact",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "contact"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+1-555-123-4567\",\n  \"message\": \"I have a question about my account.\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Page — Terms",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pages/terms",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pages",
+                                "terms"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Page — Privacy",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pages/privacy",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pages",
+                                "privacy"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "13 · Validation Errors",
+            "item": [
+                {
+                    "name": "Register Profile — Fails (invalid fields)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/register-profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "register-profile"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"username\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"short\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('422 validation', () => pm.response.to.have.status(422));",
+                                    "const res = pm.response.json();",
+                                    "pm.test('success is false', () => pm.expect(res.success).to.be.false);",
+                                    "pm.test('message is Validation failed', () => pm.expect(res.message).to.equal('Validation failed.'));",
+                                    "pm.test('has errors', () => pm.expect(res).to.have.property('errors'));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Withdrawal — Insufficient Balance",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/withdrawals",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "withdrawals"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n  \"amount\": 99999999.00\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('422 for insufficient balance', () => pm.response.to.have.status(422));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Me — Unauthenticated",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "me"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('401 unauthenticated', () => pm.response.to.have.status(401));",
+                                    "pm.test('success is false', () => pm.expect(pm.response.json().success).to.be.false);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
